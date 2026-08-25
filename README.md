@@ -39,12 +39,22 @@ python3 cache_test_2.py
 
 ~25 minutes end-to-end. Writes `results2.csv` and `SUMMARY2.md`.
 
-**Result:** on the contested provider pool, 6/7 sessions switched provider after the idle gap and
-6/7 saw cache hit rate collapse — including reroutes onto providers with no caching support at
-all. The `gpt-4o-mini` control switched 0/7 times at the same gaps.
+**Result:** on the contested provider pool, 6/7 sessions switched provider across the idle gap and
+6/7 saw cache hit rate collapse to near zero — including reroutes onto providers with no caching
+support at all. The `gpt-4o-mini` control switched 0/7 times across the idle gap.
 
-**Takeaway:** cache locality on OpenRouter depends heavily on the model's provider pool, not just
-on elapsed idle time.
+Both models do switch providers under active traffic, though: `gpt-4o-mini` moved once on the
+first request and then pinned permanently, while every `llama-3.3-70b` session touched three
+distinct providers in six requests.
+
+**Takeaway:** what matters is not whether a model switches providers but whether its whole pool
+supports caching — 100% of `gpt-4o-mini`'s pool caches vs 42% of `llama-3.3-70b`'s, so only the
+latter's switches are destructive.
+
+Note when reading `SUMMARY2.md`: the `baseline hit` column is a mean across baseline requests that
+were still warming (alternating contexts spaced consecutive same-context requests ~90s apart), so
+it understates steady state. Idle probes exceeding it on the control reflect that, not a cache
+improving while idle.
 
 ## Results
 
